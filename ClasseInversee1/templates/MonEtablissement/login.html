@@ -1,4 +1,5 @@
 {% extends "MonEtablissement/base.html" %}
+{% load crispy_forms_tags %}
 
 {% block title %}Connexion{% endblock %}
 
@@ -7,18 +8,19 @@
 {% block headerContent %}{% endblock %}
 
 {% block content %}
-	<form action="login" method="post">{% csrf_token %}
+<!-- 	<form action="login" method="post">{% csrf_token %} -->
 	
 	
 		
-	<!-- methode .as_p pour mettre en ligne les champs du formaulaire -->
-	{{ form.as_p }}
+	<!-- methode .as_p pour mettre en ligne les champs du formulaire -->
+	<!-- {{ form.as_p }} -->
+	{% crispy form %}
 	
-		<p>
-			<input type="submit" value="Se connecter" />
-		<a href="????">Créer un compte</a>
-		</p>	
+		<!-- <p> -->
+<!-- 			<input type="submit" value="Se connecter" /> -->
+<!-- 		<a href="????">Créer un compte</a> -->
+<!-- 		</p>	 -->
 	
 	
-	</form>
+<!-- 	</form> -->
 {% endblock %}
