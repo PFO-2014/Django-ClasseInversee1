@@ -1,0 +1,24 @@
+{% extends "MonEtablissement/base.html" %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block bodyId %}loginPage{% endblock %}
+
+{% block headerContent %}{% endblock %}
+
+{% block content %}
+	<form action="login" method="post">{% csrf_token %}
+	
+	
+		
+	<!-- methode .as_p pour mettre en ligne les champs du formaulaire -->
+	{{ form.as_p }}
+	
+		<p>
+			<input type="submit" value="Se connecter" />
+		<a href="????">Créer un compte</a>
+		</p>	
+	
+	
+	</form>
+{% endblock %}
