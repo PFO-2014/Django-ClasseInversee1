@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from MonEtablissement.models import MesClasse, MesSequence, MesSeance,\
-    MesActivite, Eleve
+    MesActivite, Eleve, MesNiveaux, MesQuestion, MesReponse
 from django.contrib.admin.helpers import Fieldset
 
 
@@ -10,6 +10,10 @@ from django.contrib.admin.helpers import Fieldset
 
 class MesSequencesInline(admin.TabularInline):
     model = MesSequence
+    extra = 1
+
+class MesReponsesInline(admin.TabularInline):
+    model = MesReponse
     extra = 1
     
 class MesActiviteInline(admin.TabularInline):
@@ -30,13 +34,16 @@ class MesSeanceAdmin(admin.ModelAdmin):
     inlines = [MesActiviteInline]
     
 class MesSequenceAdmin(admin.ModelAdmin):
-    list_display = ('short_description_sequence', 'niveau_indicatif')
-    list_filter = ('short_description_sequence', 'niveau_indicatif')
+    list_display = ('short_description_sequence', 'niveau')
+    list_filter = ('short_description_sequence', 'niveau')
     
     Fieldset = [
                 ('Séquence', {'fields': ['short_description_sequence']}),
-                ('Niveau', {'fields': ['niveau_indicatif']})
+                ('Niveau', {'fields': ['niveau']})
                 ]
+class MesQuestionAdmin(admin.ModelAdmin):
+    inlines = [MesReponsesInline]
+    
 
 
 # Register your models here.
@@ -45,4 +52,10 @@ admin.site.register(MesSequence, MesSequenceAdmin)
 admin.site.register(MesSeance, MesSeanceAdmin)
 admin.site.register(MesActivite)
 admin.site.register(Eleve)
+admin.site.register(MesNiveaux)
+admin.site.register(MesQuestion, MesQuestionAdmin)
+admin.site.register(MesReponse)
+
+
+
 

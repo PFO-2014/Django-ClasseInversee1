@@ -19,11 +19,11 @@ TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
 #Localisation des fichiers statique (CSS, images, decorations...)
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'), )
 
 # PRESET STYLES
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
-
+# CRISPY_TEMPLATE_PACK = 'uni_form'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
@@ -98,4 +98,3 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
-STATIC_URL = '/static/'

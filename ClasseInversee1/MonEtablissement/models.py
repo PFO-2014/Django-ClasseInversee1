@@ -11,6 +11,20 @@ CREATION DE LA BASE DE DONNEE
 AJOUT DES METHODES DEDIEES
 """
 
+#===============================================================================
+# NIVEAU - pour relation n-n classe-sequence
+#===============================================================================
+class MesNiveaux(models.Model):
+    """
+    Classe définissant la base de donnée des niveaux
+    """
+    
+    niveau = models.IntegerField('Niveau', unique=True)
+    
+
+    def __unicode__(self):
+        return str(self.niveau)
+
 
 
 #===============================================================================
@@ -18,12 +32,13 @@ AJOUT DES METHODES DEDIEES
 #===============================================================================
 class MesClasse(models.Model):
     """
-    Classe définissant la base de donnée des niveaux
+    Classe définissant la base de donnée des classes
     """
     nom_etablissement_text = models.CharField('mon établissement', max_length=200)
     annee_cours_dateint = models.IntegerField('Année en cours', default=timezone.datetime.today().year, editable=True)
     
-    niveau = models.IntegerField('Niveau')
+#     niveau = models.IntegerField('Niveau')
+    niveau = models.ForeignKey(MesNiveaux)
 
     def annee_en_cours(self):
         return self.annee_cours_dateint == timezone.datetime.today().year
@@ -31,7 +46,8 @@ class MesClasse(models.Model):
     annee_en_cours.short_description = 'année en cours'
 
     def __unicode__(self):
-        return self.nom_etablissement_text+" "+str(self.niveau)+"eme, "+str(self.annee_cours_dateint)
+        return self.nom_etablissement_text+" "+str(self.niveau)+", "+str(self.annee_cours_dateint)
+
 
 
 #===============================================================================
@@ -59,13 +75,13 @@ class Eleve(models.Model):
          long and can contain any character. See the password documentation.1
     """
     
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, unique=True)
     
-    ma_classe = models.ForeignKey(MesClasse)
-    date_de_naissance = models.DateField()
+    ma_classe = models.ForeignKey(MesClasse,blank=True, null=True)
+    date_de_naissance = models.DateField(blank=True, null=True)
     
     def __unicode__(self):
-        return self.user.username
+        return str(self.user)
     
     #nom = models.CharField(max_length=30)
     #prenom = models.CharField(max_length=30)
@@ -82,15 +98,20 @@ class MesSequence(models.Model):
     Classe définissant le modèle du chapitrage
     progression;...
     """
+    #Description et référencement d'une séquence
     short_description_sequence = models.CharField("Nom de la séquence", max_length=200)
     full_description_sequence = models.TextField("Description d'une séquence", default='Description manquante')
-    niveau_indicatif = models.IntegerField('Niveau', blank=True, null=True)
-    
     domaine = models.CharField("domaine et/ou thème", max_length=200)
     
-    #link to MesClasses
+    #Foreign Keys
+    niveau = models.ForeignKey(MesNiveaux,blank=True, null=True)
     ma_classe = models.ForeignKey(MesClasse,blank=True, null=True)
-   
+    
+    #Champs pour suivi de progression
+    ordre = models.IntegerField('ordre de la séquence', blank=True, null=True)
+    sequence_en_cours = models.BooleanField(default=False)
+
+    
     def __unicode__(self):
         try:
             return self.short_description_sequence+" niveau "+str(self.ma_classe.niveau)+"eme"
@@ -127,17 +148,65 @@ class MesActivite(models.Model):
     """
     short_description_activite = models.CharField("Type D'activité", max_length=200)
     full_description_activite = models.TextField("Enoncé ", default='Description requise pour cette activité')
-    docfile = models.FileField(upload_to='documents/%Y/%m/%d')
+    docfile = models.FileField(upload_to='documents/%Y/%m/%d',blank=True)
 
     
     ma_seance = models.ForeignKey(MesSeance)
     
     def __unicode__(self):
         return self.short_description_activite
+
+#===============================================================================
+# PROGRESSION ELEVE - RESULATS; PARTICIPATION
+#===============================================================================    
+class ProgressionEleve(models.Model):
+    """
+    Classe pour enregistrer l'activité des éléves et leurs résultats
+    """
+    eleve = models.ForeignKey(Eleve)
+    activite = models.ForeignKey(MesActivite)
+    #pour une activité, le résultat (niveau implicite porté par champ activite)
+    #Blank; null si pas de participation à l'activité
+    resultat = models.IntegerField('Niveau', blank=True, null=True)
+
+
+#===============================================================================
+# QUESTION 
+#=============================================================================== 
+class MesQuestion(models.Model):
+    """
+    Classe supportant l'insertion de question; incluant:
+    - Enoncé
+    - Facultativement: un document
+    """
+    #Foreign keys
+    activite = models.ForeignKey(MesActivite)
+    
+    #champ propre
+    enonce = models.TextField()
+    resume = models.CharField('description succinte', max_length=200)
+    
+    def __unicode__(self):
+        return self.resume
+    
+#===============================================================================
+# QUESTION 
+#=============================================================================== 
+class MesReponse(models.Model):
+    """
+    Classe supportant les réponses à une question.
+    - Default: Réponse unique, champ verify = True
+    - alternative : plusieurs réponses ie:QCM
+    """
     
     
-           
-       
-       
-       
+    
+    #Foreign keys
+    question = models.ForeignKey(MesQuestion)
+    
+    #champ propre
+    verify = models.BooleanField('Cette réponse est-elle juste?',default=True)
+    reponse_text = models.CharField('une réponse textuelle', max_length=200,
+                                    blank=True, null=True)
+
        

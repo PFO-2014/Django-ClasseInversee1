@@ -1,16 +1,15 @@
-{% load crispy_forms_tags %}
-<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-
+<!-- Base HTML doc, Bootstrap template -->
 	<head>
 		<meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-
-        
-        <link rel="stylesheet" href="/static/css/main.css" /><!-- Lien vers la feuille de style -->
-		<title>La Classe à l'envers – {% block title %}Bienvenue{% endblock %}</title> 
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- Bootstrap -->
+        <link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen" /> 
 		
+		
+		
+		<title>La Classe à l'envers – {% block title %}Bienvenue{% endblock %}</title> 
 		
 		
 	</head>
@@ -22,9 +21,24 @@
 		</header>
 
 		<section id="content">
-			{% block content %}{% endblock %}
+		
+			
+		
+			<div class="container">
+ 				<div class="row">
+ 				 <div class="center-block col-md-8" style="float: none; background-color: #F5F4EF">
+					{% block content %}{% endblock %}
+			
+			
+			
+   
+    </div>
+  </div>
+				
+		
+			</div><!-- container -->
 		</section>
-
+	
 	</body>
 
 </html>

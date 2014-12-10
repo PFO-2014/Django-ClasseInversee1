@@ -12,4 +12,7 @@ urlpatterns = patterns('',
     url(r'^welcome', views.welcome),
     url(r'^MonEtablissement/', include('MonEtablissement.urls')),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^exampleform/', views.exampleform),
+    url(r'^register/', views.register),
+    
 )
