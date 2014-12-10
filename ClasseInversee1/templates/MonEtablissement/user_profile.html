@@ -1,0 +1,30 @@
+{% extends "MonEtablissement/base.html" %}
+<!-- acces crispy namespace -->
+{% load crispy_forms_tags %}
+
+{% block title %}Création d’un profil{% endblock %} 
+{% block bodyId %}userProfilePage{% endblock %} 
+{% block content %}
+<h1>Création d’un compte elève</h1> 
+
+
+{% if user_form %}
+
+            {% crispy user_form %}       
+            
+{% else %}
+
+    {% if student_form %}
+    <h2> Utilisateur <em>{{ nom }}  </em></h2>
+             
+             {% crispy student_form %}
+	{% else %}
+	
+	<p> nothing </p>
+
+	{% endif %}
+	
+
+{% endif %}
+
+{% endblock %}
