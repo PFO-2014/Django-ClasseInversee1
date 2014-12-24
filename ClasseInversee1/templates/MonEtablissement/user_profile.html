@@ -10,15 +10,20 @@
 
 {% if user_form %}
 
+			
             {% crispy user_form %}       
-            
+
 {% else %}
 
-    {% if student_form %}
-    <h2> Utilisateur <em>{{ nom }}  </em></h2>
+    {% if student_form %}   
+    
+    <p> Utilisateur: {{ student_form.instance.user| upper }} </p>
              
              {% crispy student_form %}
 	{% else %}
+	
+	
+	
 	
 	<p> nothing </p>
 

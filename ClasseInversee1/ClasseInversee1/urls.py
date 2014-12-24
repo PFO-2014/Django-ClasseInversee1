@@ -14,5 +14,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^exampleform/', views.exampleform),
     url(r'^register/', views.register),
+    url(r'^questionform/', views.my_questionform),
+
     
 )

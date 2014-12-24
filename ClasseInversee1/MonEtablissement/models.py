@@ -75,9 +75,9 @@ class Eleve(models.Model):
          long and can contain any character. See the password documentation.1
     """
     
-    user = models.OneToOneField(User, unique=True)
+    user = models.ForeignKey(User, unique=True)
     
-    ma_classe = models.ForeignKey(MesClasse,blank=True, null=True)
+    ma_classe = models.ForeignKey(MesClasse)
     date_de_naissance = models.DateField(blank=True, null=True)
     
     def __unicode__(self):
@@ -190,7 +190,7 @@ class MesQuestion(models.Model):
         return self.resume
     
 #===============================================================================
-# QUESTION 
+# REPONSE 
 #=============================================================================== 
 class MesReponse(models.Model):
     """

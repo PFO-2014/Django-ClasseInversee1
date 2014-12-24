@@ -6,30 +6,42 @@ from django.contrib.auth.hashers import check_password
 from MonEtablissement.models import Eleve
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field
+from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field,\
+    Hidden
 from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
 
+#===============================================================================
+# FORMULAIRE AJOUT ELEVE
+#===============================================================================
 
 class UserForm(forms.ModelForm):
     
     
+    def __init__(self, *args, **kwargs):
+        super(UserForm, self).__init__(*args, **kwargs)
+        self.fields['first_name'].required = True
+        self.fields['last_name'].required = True
+        
     class Meta:
         model = User
-        fields = ('username', 'email')
-        
-    
+        fields = ('first_name', 'last_name', 'username', 'email')
+                                
 #     password = forms.CharField(label='Mot de passe', required=True, 
 #                                widget = forms.PasswordInput())
-    
-    password = forms.CharField(label="Password",
+    password = forms.CharField(label="Mot de passe",
                                 widget=forms.PasswordInput)
-    password2 = forms.CharField(label="Password confirmation",
-                                widget=forms.PasswordInput,
-                                help_text="Enter the same password as above, for verification.")
+    password2 = forms.CharField(label="Vérification du mot de passe",
+                                widget=forms.PasswordInput)
     
     helper = FormHelper()
     helper.form_method = 'POST'
     helper.layout = Layout(
+        PrependedText('first_name', 
+                      '<span class="glyphicon glyphicon-user"></span> ',  
+                      css_class='input-sma'),
+        PrependedText('last_name', 
+                      '<span class="glyphicon glyphicon-user"></span> ',  
+                      css_class='input-sma'),
         PrependedText('username', 
                       '<span class="glyphicon glyphicon-user"></span> ',  
                       css_class='input-sma'),
@@ -55,9 +67,9 @@ class UserForm(forms.ModelForm):
         password = self.cleaned_data.get("password")
         password2 = self.cleaned_data.get("password2")
         if password and password2 and password != password2:
-            raise forms.ValidationError(
-                                        self.error_messages['password_mismatch'])
-            return password2
+            raise forms.ValidationError('Veuillez entrer deux fois le même mot de passe')
+                
+        return password2
         
     def save(self, commit=True):
         user = super(UserForm, self).save(commit=False)
@@ -69,31 +81,32 @@ class UserForm(forms.ModelForm):
 
 class StudentProfileForm(forms.ModelForm):
     
+   
+    
     class Meta:
         model = Eleve
-#         fields = ('user','date_de_naissance', 'ma_classe')
-
+        fields = ('user','date_de_naissance', 'ma_classe')
+        
 
     #Crispy FormHelper
     helper = FormHelper()
     helper.form_method = 'POST'
-    helper.layout = Layout(
-        PrependedText('user', 
-                      '<span class="glyphicon glyphicon-envelope"></span> ', 
-                      css_class='input-sm'),
+    helper.layout = Layout(                    
         PrependedText('date_de_naissance', 
                       '<span class="glyphicon glyphicon-user"></span> ',  
                       css_class='input-sma'),
         PrependedText('ma_classe', 
                       '<span class="glyphicon glyphicon-home"></span> ', 
                       css_class='input-sm'),
+        Field('user', type='hidden'),
+       
         
         
         FormActions(
             Submit('save', 'continue', css_class='btn-primary'),
         )
     )
-
+   
 
 class DocumentForm(forms.Form):
     docfile = forms.FileField(
@@ -205,3 +218,64 @@ class LoginForm(forms.Form):
         return cleaned_data
         
         
+class QuestionForm(forms.Form):
+    """
+    Formulaire pour une question unique
+    """
+    
+    def __init__(self, question, reponse , *args, **kwargs):
+        super(QuestionForm, self).__init__(*args, **kwargs)
+         
+        self.question = question
+        self.reponse = reponse
+        
+        # Uni-form
+        self.helper = FormHelper(self)
+        self.helper.form_id = 'id-exampleForm'
+        self.helper.form_class = 'blueForms'
+        self.helper.form_method = 'post'
+        self.helper.form_action = 'submit_survey'
+        self.helper.layout =  Layout(
+                                     
+                Field(self.question.enonce, style=" padding: 10px;"),
+                Field('question_eleve'),
+                FormActions(
+                            Submit('save_changes', 'Save changes', css_class="btn-primary"),
+                            Submit('cancel', 'Cancel'),
+                            )                   
+                )
+#         self.helper.add_input(Submit('submit', 'Submit'))
+    
+         
+        #prepare a radio-button list
+        self.answerlist = self.get_questiontext()
+        self.fields[self.question.enonce] = forms.ChoiceField(
+                                                        choices =self.answerlist, 
+                                                        widget = forms.RadioSelect,
+                                                        )
+        #dummy textarea for student personal question
+        self.fields['question_eleve'] = forms.CharField(
+                                        widget = forms.Textarea(),
+                                        )
+
+  
+        
+    def get_questiontext(self, reponse=None):
+        """
+        build a list of question
+        """
+        
+        if reponse is None:
+        
+            reponse = self.reponse
+            
+        questionlist = []
+        for i,q in enumerate(reponse):
+            questionlist.append((str(i),str(q.reponse_text),))
+     
+        return questionlist
+            
+        
+    
+    
+    
