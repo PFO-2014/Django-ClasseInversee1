@@ -218,63 +218,60 @@ class LoginForm(forms.Form):
         return cleaned_data
         
         
-class QuestionForm(forms.Form):
+class QuestionsForm(forms.Form):
     """
     Formulaire pour une question unique
     """
     
-    def __init__(self, question, reponse , *args, **kwargs):
-        super(QuestionForm, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(QuestionsForm, self).__init__(*args, **kwargs)
          
-        self.question = question
-        self.reponse = reponse
-        
+        self.answersdict = {}
+
+
         # Uni-form
         self.helper = FormHelper(self)
         self.helper.form_id = 'id-exampleForm'
         self.helper.form_class = 'blueForms'
         self.helper.form_method = 'post'
         self.helper.form_action = 'submit_survey'
-        self.helper.layout =  Layout(
-                                     
-                Field(self.question.enonce, style=" padding: 10px;"),
-                Field('question_eleve'),
-                FormActions(
-                            Submit('save_changes', 'Save changes', css_class="btn-primary"),
-                            Submit('cancel', 'Cancel'),
-                            )                   
+        self.helper.layout =  Layout(                                 
                 )
-#         self.helper.add_input(Submit('submit', 'Submit'))
     
-         
-        #prepare a radio-button list
-        self.answerlist = self.get_questiontext()
-        self.fields[self.question.enonce] = forms.ChoiceField(
-                                                        choices =self.answerlist, 
-                                                        widget = forms.RadioSelect,
-                                                        )
-        #dummy textarea for student personal question
-        self.fields['question_eleve'] = forms.CharField(
-                                        widget = forms.Textarea(),
-                                        )
 
-  
-        
-    def get_questiontext(self, reponse=None):
+    def get_questiontext(self, reponse):
         """
         build a list of question
         """
         
-        if reponse is None:
-        
-            reponse = self.reponse
-            
         questionlist = []
         for i,q in enumerate(reponse):
             questionlist.append((str(i),str(q.reponse_text),))
      
         return questionlist
-            
+
+    def add_question(self, question, reponse):
+        
+        self.answersdict[question] = self.get_questiontext(reponse)
+        
+        self.fields[question.enonce] = forms.ChoiceField(
+                                                        choices =self.answersdict[question], 
+                                                        widget = forms.RadioSelect,
+                                                        )
+        self.helper.layout.fields.append(Field(question.enonce, style=" padding: 10px;")) 
+        
+                                      
+    def close(self):
+        #dummy textarea for student personal question
+        self.fields['question_eleve'] = forms.CharField(
+                                        widget = forms.Textarea(),
+                                        )
+        self.helper.layout.fields.append(Field('question_eleve'))
+        
+        self.helper.form_action = 'submit_answer'
+
+        self.helper.add_input(Submit('submit', 'Submit'))
+
         
     
     

@@ -11,7 +11,7 @@ from django.utils import timezone
 from MonEtablissement.models import MesActivite, MesClasse, MesSeance,\
                                     MesSequence, MesNiveaux, User, Eleve, \
                                     MesQuestion, MesReponse
-from forms import LoginForm, MessageForm, StudentProfileForm, UserForm, QuestionForm
+from forms import LoginForm, MessageForm, StudentProfileForm, UserForm, QuestionsForm
 
 # Create your views here.
 
@@ -74,13 +74,19 @@ def welcome(request):
     """
     return index(request)
 
+
 def exampleform(request):
+    """
+    test crispy forms
+    """
     # This view is missing all form handling logic for simplicity of the example
     return render(request, 'MonEtablissement/exampleform.html', {'form': MessageForm()}) 
 
 
-
-def register(request): 
+def register(request):
+    """
+    User registration
+    """
        
     if len(request.POST) > 0:
         
@@ -101,13 +107,10 @@ def register(request):
             username = request.POST.get('username')
             #Retrieve the underlying User object from DB
             user = User.objects.get(username=username)
-#             #Create an non-validating object
-#             if not student_form.is_valid():
-#                 student_form = StudentProfileForm(None)
+            #Create an non-validating object
             eleve = student_form.save(commit=False)
             #Pass it the desired user foreign key
             eleve.user = user
-            
             #build a new "partial + Non validated" StudentProfileForm using the eleve instance
             student_form = StudentProfileForm(None, instance=eleve)
             return render(request,'MonEtablissement/user_profile.html', {'student_form': student_form, 'username': str(student_form.helper.attrs)})
@@ -125,15 +128,6 @@ def register(request):
             
             return render (request, 'MonEtablissement/user_profile.html', {'student_form': student_form})
             
-#         
-#         elif not user_form.is_valid() and not student_form.is_valid() and user_form.is_bound and not student_form.is_bound:
-#             #user_form: Case not valid, including empty form
-#             return render (request, 'MonEtablissement/user_profile.html', {'user_form': user_form}) 
-#         
-       
-#         elif  not user_form.is_valid() and user_form.has_changed():
-#             return render (request, 'MonEtablissement/user_profile4.html', {'user_form': user_form})
-#             
         else:
             return render (request, 'MonEtablissement/user_profile.html', {'user_form': user_form})
     else:
@@ -142,21 +136,33 @@ def register(request):
         
         return render (request, 'MonEtablissement/user_profile.html', {'user_form': user_form, 'student_form': student_form})
 
+def iterquestions():
+    """
+    generator pour iterer sur un set de question/reponse
+    http://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do-in-python
+    """
+    #get a random question
+    questions = MesQuestion.objects.order_by('?')
+    
+    for question in questions:
+        reponse = MesReponse.objects.select_related().filter(question = question)
+        yield question, reponse
+
+
 def my_questionform(request):
     """
     Classe pour instancier un formulaire de question/reponse
     """
+    #prepare a form; QCM
+
+    form = QuestionsForm()
+    for question, reponse in iterquestions():
+        form.add_question(question, reponse)
+    form.close()
     
-    #get a random question
-    question = MesQuestion.objects.order_by('?')[0]
-    #retrieve reponse
-    reponse = MesReponse.objects.select_related().filter(question = question)
-   
-   
-    #prepare a form; QCM, unique question
-    form = QuestionForm(question, reponse)
     return render(request, 'MonEtablissement/questionform.html', {'form': form})
     
 
+        
 
     
