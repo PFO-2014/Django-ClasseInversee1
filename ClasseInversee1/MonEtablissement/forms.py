@@ -192,16 +192,15 @@ class LoginForm(forms.Form):
             Submit('login', 'Connexion', css_class='btn-primary'),
         )
     )
-#     helper.add_input(Submit('login', 'Connexion', css_class='btn-primary'))
-    
-    
-    
+   
     
     
     def clean(self):
         """
-        surcharge de la méthode clean de form.Form
-        la méthode clean effectue le transtypage html, django vers python
+        Verification du mot de passe et de l'id.
+
+        surcharge de la méthode clean de form.Form        
+        (la méthode clean effectue le transtypage html, django vers python)
         """
         #appel de clean au niveau de la classe parente. ie: non encore surchargé
         cleaned_data = super (LoginForm, self).clean()

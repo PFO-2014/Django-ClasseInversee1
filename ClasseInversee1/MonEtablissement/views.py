@@ -19,7 +19,7 @@ from forms import LoginForm, MessageForm, StudentProfileForm, UserForm, Question
 # Creation de la vue Index sur les Niveaux
 #===============================================================================
 #  2. Codage raccourci avec méthode render()
-def index(request, *args):
+def index(request, logged_user=None, *args):
     """
     Main Index Page: Expose only current year MesClasse.niveau
     """
@@ -33,6 +33,9 @@ def index(request, *args):
         context.update({'email':email})
     except:
         pass
+    
+    if logged_user:
+        context.update({'logged_user': logged_user})
     
     #render(objet requête, garabit, contexte rempli <dict> (variable))
     return render(request, 'MonEtablissement/index.html', context)
@@ -64,15 +67,49 @@ def login(request):
         #construit empty form pour redemander les id. connexion
         form = LoginForm(request.POST or None)
         if form.is_valid():
+            #Recupère le nom d'utilisateur renseigné par l'utilisateur dans le LoginForm
+            user_name = form.cleaned_data['username'] 
+            #Recupere l'entrée correspondante dans le modèle User
+            logged_user = User.objects.get(username=user_name) 
+            #Passe l'identificateur à l'objet request 
+            request.session['logged_user_id'] = logged_user.id 
             return HttpResponseRedirect('/welcome')
     return render(request,'MonEtablissement/login.html', {'form': form})
 
 
+def get_logged_user_from_request(request):
+    """
+    Protection des pages privées 
+    
+    TODO: distinguer les connexions eleves/professeur pour proposer une 
+          page d'administration professeur
+    """
+    
+    if 'logged_user_id' in request.session: 
+        logged_user_id = request.session['logged_user_id']
+        logged_user = User.objects.get(id=logged_user_id)
+        return logged_user
+    else:
+        return None
+
 def welcome(request):
     """
-    Renvoi vers ?
+    Renvoi vers page d'acceuil avec identification
     """
-    return index(request)
+    logged_user = get_logged_user_from_request(request)
+    
+    if logged_user:
+        return index(request, logged_user=logged_user)
+    #kept for reference - replaced by the generic get_logged_user_from_request()
+#     if 'logged_user_id' in request.session:
+#         logged_user_id = request.session['logged_user_id']
+#         logged_user = User.objects.get(id=logged_user_id)
+#         return index(request, logged_user=logged_user)
+
+    else:
+        return HttpResponseRedirect('/login')
+    
+    
 
 
 def exampleform(request):
