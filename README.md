@@ -2,9 +2,11 @@ Django-ClasseInversee1
 ======================
 
 A First Django project
+with crispy-bootstrap3
 
-<<<<<<< HEAD
-Branch to test crispy-bootstrap3
+include:
+  -session management
+
 =======
 master build from django classbook
->>>>>>> 6ce56a6f6f98aef8fae6e779cd786bc4bcf82a12
+Apprendre_la_programmation_web_avec_Python_et_Django_ed1_v1
