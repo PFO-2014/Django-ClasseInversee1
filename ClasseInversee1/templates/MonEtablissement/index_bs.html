@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% extends "MonEtablissement/base.html" %}
+<!-- acces crispy namespace -->
+{% load crispy_forms_tags %}
+
+{% block title %}Acceuill{% endblock %} 
+{% block bodyId %}welcomePage{% endblock %} 
+
+
+
+
+{% block content %}
+
+
+
+
+
+<div class="container">
+  <div class="jumbotron">
+    <h1><a href="/">C'est la Classe à l'envers ! </a>
+    	<a href="/login" class="btn btn-info" role="button">Se connecter</a>
+    	<a href="/register" class="btn btn-info" role="button">Nouvel utilisateur</a>
+    </h1>
+    <h2>Passerelle élève/professeur pour la classe inversée</h2> 
+    <div class="container">
+    
+    	{% if logged_user %}
+				<!-- <h3>Bienvenue  {{logged_user.first_name}} </h3> -->
+				<p>Bienvenue  {{logged_user}} </p>
+		{% else %}
+				<p>Identifiez-vous!</p>
+		{% endif %}
+    
+    </div>
+    
+  </div><!-- jumbotron -->
+  
+  {% if niveau_list %}
+  
+  	{% for monniveau in niveau_list %}  
+  	            	                 	
+    <div class="row">
+    
+		<div class="col-sm-3">
+	      <h3><a href="/MonEtablissement/sequence/{{ monniveau.niveau }}eme"> {{ monniveau.niveau }} eme</a></h3>
+	      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit...</p>
+	      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris...</p>
+		</div>
+		
+	{% endfor %}
+	
+	</div>
+</div>  
+
+
+{% endif %}
+  
+  
+  <!-- test un titre de niveau 1 qui redirige vers la page d'acceuil -->
+				<h1 class="site-title">
+				<a href="http://127.0.0.1:8000/welcome" title="la classe à l'envers.fr" rel="home">la classe à l'envers</a>
+<!-- 			<a href="http://www.classe-a-l-envers.fr/" title="la classe à l'envers.fr" rel="home">la classe à l'envers</a> -->				</h1>
+						
+				<h2 class="site-description">Classe inversée en Mathématiques</h2>
+				
+				<!-- test acceuil utilisateur -->
+				{% if logged_user %}
+					<h3>Bienvenue  {{logged_user.first_name}} </h3>
+					<h3>Bienvenue  {{logged_user}} </h3>
+				{% endif %}
+				
+				<div> Ce site est votre plateforme de classe inversée. 
+				
+					BlablablaBlablablaBlablablaBlablablaBlablabla BlablablaBlablablaBlablabla
+					BlablablaBlablablaBlablablaBlablabla BlablablaBlablablaBlablabla BlablablaBlablablaBlablabla
+					BlablablaBlablablaBlablablaBlablablaBlablablaBlablablaBlablablaBlablablaBlablabla
+					BlablablaBlablablaBlablablaBlablablaBlablablaBlablabla BlablablaBlablablaBlablabla Blablabla
+				
+				</div>
+
+
+{% endblock %}

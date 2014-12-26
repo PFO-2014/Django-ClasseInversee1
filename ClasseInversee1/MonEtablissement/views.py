@@ -38,7 +38,7 @@ def index(request, logged_user=None, *args):
         context.update({'logged_user': logged_user})
     
     #render(objet requête, garabit, contexte rempli <dict> (variable))
-    return render(request, 'MonEtablissement/index.html', context)
+    return render(request, 'MonEtablissement/index_bs.html', context)
 
 def sequence(request, niveau_int):
     """
@@ -91,6 +91,19 @@ def get_logged_user_from_request(request):
         return logged_user
     else:
         return None
+    
+    
+def show_profile(request):
+    """
+    Creation d'une vue pour afficher le profil utilisateur
+    """
+    logged_user = get_logged_user_from_request(request)
+    if logged_user:
+        return render_to_response ('MonEtablissement/show_profile.html',
+                                   {'user_to_show': logged_user})
+    # Le paramètre n'a pas été trouvé
+    else:
+        return HttpResponseRedirect('/login')
 
 def welcome(request):
     """
