@@ -2,7 +2,8 @@
 
 from django.contrib import admin
 from MonEtablissement.models import MesClasse, MesSequence, MesSeance,\
-    MesActivite, Eleve, MesNiveaux, MesQuestion, MesReponse
+    MesActivite, Eleve, MesNiveaux, MesQuestion, MesReponse, Domaine, \
+    Competence, ProgressionEleve
 from django.contrib.admin.helpers import Fieldset
 
 
@@ -18,6 +19,10 @@ class MesReponsesInline(admin.TabularInline):
     
 class MesActiviteInline(admin.TabularInline):
     model = MesActivite
+    extra = 1
+
+class MesCompetenceInline(admin.TabularInline):
+    model = Competence
     extra = 1
 
 
@@ -40,7 +45,12 @@ class MesSequenceAdmin(admin.ModelAdmin):
     Fieldset = [
                 ('Séquence', {'fields': ['short_description_sequence']}),
                 ('Niveau', {'fields': ['niveau']})
+                
+    
                 ]
+    
+    inlines = [MesCompetenceInline]
+    
 class MesQuestionAdmin(admin.ModelAdmin):
     inlines = [MesReponsesInline]
     
@@ -55,7 +65,8 @@ admin.site.register(Eleve)
 admin.site.register(MesNiveaux)
 admin.site.register(MesQuestion, MesQuestionAdmin)
 admin.site.register(MesReponse)
-
+admin.site.register(Domaine)
+admin.site.register(ProgressionEleve)
 
 
 

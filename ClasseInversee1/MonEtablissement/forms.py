@@ -231,9 +231,9 @@ class QuestionsForm(forms.Form):
         # Uni-form
         self.helper = FormHelper(self)
         self.helper.form_id = 'id-exampleForm'
-        self.helper.form_class = 'blueForms'
+        self.helper.form_class = 'blueform'
+#         self.helper.field_class = 'col-sm-3'
         self.helper.form_method = 'post'
-        self.helper.form_action = 'submit_survey'
         self.helper.layout =  Layout(                                 
                 )
     
@@ -257,7 +257,9 @@ class QuestionsForm(forms.Form):
                                                         choices =self.answersdict[question], 
                                                         widget = forms.RadioSelect,
                                                         )
-        self.helper.layout.fields.append(Field(question.enonce, style=" padding: 10px;")) 
+        self.helper.layout.fields.append(Div(Field(question.enonce
+                                                  ), 
+                                             css_class="col-sm-4", style="border: #cdcdcd medium solid; border-radius: 10px; padding:25px")) 
         
                                       
     def close(self):
@@ -265,11 +267,16 @@ class QuestionsForm(forms.Form):
         self.fields['question_eleve'] = forms.CharField(
                                         widget = forms.Textarea(),
                                         )
-        self.helper.layout.fields.append(Field('question_eleve'))
+        self.helper.layout.fields.append(Div(Field('question_eleve'), css_class="col-sm-4"))
         
-        self.helper.form_action = 'submit_answer'
+#         self.helper['question_eleve'].wrap(Field, css_class="col-sm-3")
+#         numberofquestion = len(self.helper)
+#         self.helper.all().wrap_together(Div)
+#         self.helper[0:numberofquestion].wrap(Field, css_class="col-sm-3")
+        
+#         self.helper.form_action = 'Submit_survey'
 
-        self.helper.add_input(Submit('submit', 'Submit'))
+        self.helper.layout.append(Div(Submit('submit', 'Valider'), css_class="col-sm-4"))
 
         
     

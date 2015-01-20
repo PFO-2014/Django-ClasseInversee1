@@ -5,6 +5,8 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 
+import random
+
 
 """
 CREATION DE LA BASE DE DONNEE
@@ -47,9 +49,30 @@ class MesClasse(models.Model):
 
     def __unicode__(self):
         return self.nom_etablissement_text+" "+str(self.niveau)+", "+str(self.annee_cours_dateint)
+#===============================================================================
+# DOMAINE
+#===============================================================================
 
+class Domaine(models.Model):
+    """
+    Consolidate Domain of Activity
+    """
+     
+    nom = models.CharField(max_length=50, unique=True)
+    color = models.CharField(max_length=7, default="#cdcdcd", unique=True)
 
+    def save(self):
+        if self.color=="#cdcdcd":
+            r = lambda: random.randint(0,255)
+            self.color = '#%06x' % ((r()+255)/2,(r()+255)/2,(r()+255)/2)
+        super(Domaine, self).save()
+    
+    def __unicode__(self):
+        return self.nom
+    
 
+    
+    
 #===============================================================================
 # ELEVE
 #===============================================================================
@@ -77,7 +100,7 @@ class Eleve(models.Model):
     
     user = models.ForeignKey(User, unique=True)
     
-    ma_classe = models.ForeignKey(MesClasse)
+    ma_classe = models.ForeignKey(MesClasse, blank=True, null=True)
     date_de_naissance = models.DateField(blank=True, null=True)
     
     def __unicode__(self):
@@ -100,12 +123,14 @@ class MesSequence(models.Model):
     """
     #Description et référencement d'une séquence
     short_description_sequence = models.CharField("Nom de la séquence", max_length=200)
-    full_description_sequence = models.TextField("Description d'une séquence", default='Description manquante')
-    domaine = models.CharField("domaine et/ou thème", max_length=200)
+    full_description_sequence = models.TextField("Description d'une séquence", blank=True, null=True)
+#     domaine = models.CharField("domaine et/ou thème", max_length=200, blank=True, null=True)
     
     #Foreign Keys
     niveau = models.ForeignKey(MesNiveaux,blank=True, null=True)
     ma_classe = models.ForeignKey(MesClasse,blank=True, null=True)
+    domaine = models.ForeignKey(Domaine, blank=True, null=True)
+ 
     
     #Champs pour suivi de progression
     ordre = models.IntegerField('ordre de la séquence', blank=True, null=True)
@@ -117,6 +142,25 @@ class MesSequence(models.Model):
             return self.short_description_sequence+" niveau "+str(self.ma_classe.niveau)+"eme"
         except:
             return self.short_description_sequence
+        
+
+#===============================================================================
+# COMPETENCES
+#===============================================================================
+
+class Competence(models.Model):
+    """
+    Consolidate competences
+    """
+    
+    description = models.CharField("description", max_length=250)
+    sequence_f = models.ForeignKey(MesSequence, blank=True, null=True)
+    
+    
+    def __unicode__(self):
+        return self.description        
+
+
 #===============================================================================
 # SEANCES
 #===============================================================================
@@ -163,11 +207,11 @@ class ProgressionEleve(models.Model):
     """
     Classe pour enregistrer l'activité des éléves et leurs résultats
     """
-    eleve = models.ForeignKey(Eleve)
-    activite = models.ForeignKey(MesActivite)
+    eleve = models.ForeignKey(User)
+    activite = models.ForeignKey(MesActivite,blank=True, null=True)
     #pour une activité, le résultat (niveau implicite porté par champ activite)
     #Blank; null si pas de participation à l'activité
-    resultat = models.IntegerField('Niveau', blank=True, null=True)
+    resultat = models.IntegerField('Note', blank=True, null=True)
 
 
 #===============================================================================

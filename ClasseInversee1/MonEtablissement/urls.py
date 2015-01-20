@@ -8,6 +8,7 @@ urlpatterns = patterns('',
     url(r'^$', views.index, name='index'),
     url(r'^login', views.login),
     url(r'^sequence/(?P<niveau_int>\d+)eme/$', views.sequence, name='sequence'),
+    url(r'^sequence/(?P<niveau_int>\d+)eme/seance_id(?P<seq_id>\d+)/$', views.seance, name='seance'),
     url(r'welcome$', views.welcome, name='welcome')
     
 )

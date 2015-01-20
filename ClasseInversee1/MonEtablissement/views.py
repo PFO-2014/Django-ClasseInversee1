@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import json
+
+
 from django.shortcuts import render, render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.context_processors import csrf
@@ -10,8 +13,10 @@ from django.utils import timezone
 
 from MonEtablissement.models import MesActivite, MesClasse, MesSeance,\
                                     MesSequence, MesNiveaux, User, Eleve, \
-                                    MesQuestion, MesReponse
+                                    MesQuestion, MesReponse, Domaine, ProgressionEleve
 from forms import LoginForm, MessageForm, StudentProfileForm, UserForm, QuestionsForm
+
+
 
 # Create your views here.
 
@@ -40,18 +45,110 @@ def index(request, logged_user=None, *args):
     #render(objet requête, garabit, contexte rempli <dict> (variable))
     return render(request, 'MonEtablissement/index_bs.html', context)
 
+
+# def iter_sequence(sequence_list):
+#     """
+#     """
+#     
+#     for sequence in sequence_list:
+#         if sequence.domaine_f:
+#             yield sequence, sequence.domaine_f
+#         else:
+#             yield sequence, "ploup"
+    
+
 def sequence(request, niveau_int):
     """
     View all (current year) sequences for a unique level
     """
+
+    #recupère la liste de sequence associée au niveau (Backward lookup from Foreign key)
+    b=MesNiveaux.objects.get(niveau=niveau_int)
+#     b.messequence_set.all()
     
-#     sequence_list = MesSequence.objects.filter(ma_classe=classe_id)
-    context = {'niveau_int':niveau_int}
-    #render(objet requête, garabit, contexte rempli <dict> (variable) **kwargs)
-    return render(request, 'MonEtablissement/sequence.html', context)
+#     sequence_list = MesSequence.objects.filter(niveau=b)
+    
+    sequence_list = MesSequence.objects.filter(niveau=b).select_related("domaine").order_by('ordre')
+     
+    domaine = []
+    for d in sequence_list:
+        if d.domaine:
+            domaine.append((d,d.domaine))
+        else:
+            domaine.append((d,"#cdcdcd"))
+        
+    context = {'sequence_list': sequence_list, 'niveau_int':niveau_int, 'domaine':domaine}
+    
+    #USAGE: render(objet requête, garabit, contexte rempli <dict> (variable) **kwargs)
+    return render(request, 'MonEtablissement/sequence_bs.html', context)
 #     output ="you are looking sequences at "+unicode(etablissement_text)+" niveau "+niveau_int+" eme" 
 #     return HttpResponse(output)
 
+
+def iteractivities(seq_id):
+    """
+    Coroutine
+    generator pour iterer sur un set de question/reponse
+    http://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do-in-python
+    """
+    
+    #retrieve all sequences:
+    seance_list = MesSeance.objects.filter(ma_sequence = seq_id) 
+    
+    for seance in seance_list:
+        #Retrieve associated activities to the current sequence
+        activities = MesActivite.objects.filter(ma_seance = seance)
+#         for activity in activities:
+#             questions = MesQuestion.objects.filter(activite = activity)
+#             #retrieve questions for a given activit
+        yield seance, activities
+        
+        
+
+def seance(request,niveau_int, seq_id):
+    """
+    View all seances for a given sequence
+    
+    A seance is bound to a sequence. Several seance can point to the same sequence to 
+    keep an history of activity that have been build.
+    
+    A Seance references one or more associated activities that are:
+        - Interactive question Forms
+        - Video
+        - Documents
+    
+    """
+#     #retrieve all sequences:
+#     seance_list = MesSeance.objects.filter(ma_sequence = seq_id) 
+#     #select current seance
+# #     current_seance = TODO
+#     
+#     #Retrieve associated activities to the current sequence
+#     activities = Mes Activités.objetcs.filter(ma_seance = seance)
+#     for s in seance:
+#         output ="you are looking seance "+unicode(s)  +" from sequence "+unicode(seq_id)
+#     return HttpResponse(output)
+
+    content = iteractivities(seq_id)
+    
+    l = []
+    
+    #Consomme generator
+    for c in content:
+        activities = c[1]  
+        for activity in activities:
+            questions = MesQuestion.objects.filter(activite = activity)
+            l.append([activity,questions])
+    
+    #rebuild generator
+    content = iteractivities(seq_id)
+    
+    
+    return render (request, 'MonEtablissement/activities_bs.html', {'content': content, 'activities':l})
+    
+    
+    
+    pass
 
 def login(request):
     """
@@ -122,7 +219,13 @@ def welcome(request):
     else:
         return HttpResponseRedirect('/login')
     
+def process_questionform(request):
+    """
+    Process submitted answer from a question form
+    """
     
+    
+    pass    
 
 
 def exampleform(request):
@@ -186,33 +289,117 @@ def register(request):
         
         return render (request, 'MonEtablissement/user_profile.html', {'user_form': user_form, 'student_form': student_form})
 
-def iterquestions():
+def iterquestions(activity_id = None):
     """
+    Coroutine
     generator pour iterer sur un set de question/reponse
     http://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do-in-python
     """
-    #get a random question
-    questions = MesQuestion.objects.order_by('?')
+    #get random questions - dev 
+    if not activity_id:
+        questions = MesQuestion.objects.order_by('?')
+        
+        for question in questions:
+            reponse = MesReponse.objects.select_related().filter(question = question)
+            yield question, reponse
     
-    for question in questions:
-        reponse = MesReponse.objects.select_related().filter(question = question)
-        yield question, reponse
+    #get specific questions bound to an activity
+    else:
+        questions = MesQuestion.objects.filter(activite = activity_id)
+        for question in questions:
+            reponse = MesReponse.objects.select_related().filter(question = question)
+            yield question, reponse
 
 
-def my_questionform(request):
+def my_questionform(request,activity_id = None ):
     """
-    Classe pour instancier un formulaire de question/reponse
+    Classe pour:
+    
+        - instancier un formulaire de question/reponse
+        - Process submitted answer from a question form
+        
+    TODO: select proper question/reponse
     """
     #prepare a form; QCM
-
+    
     form = QuestionsForm()
-    for question, reponse in iterquestions():
-        form.add_question(question, reponse)
+    
+    if not activity_id:
+        for question, reponse in iterquestions():
+            form.add_question(question, reponse)
+    elif activity_id:
+        for question, reponse in iterquestions(activity_id):
+            form.add_question(question, reponse)
+            
     form.close()
-    
-    return render(request, 'MonEtablissement/questionform.html', {'form': form})
-    
-
+    output = "bonjour "
+    reptext = ""
+    note = 0
+    if len(request.POST) > 0:
+        
+        #process POST answer and write results to UserDB
+        for question, reponse in iterquestions():
+            if request.POST.get(question.enonce):
+                #logic to process Q/A
+                count = 0
+                for rep in reponse:
+                    if rep.verify:
+                        break
+                
+                if int(request.POST.get(question.enonce)) == count:
+                    #reponse juste
+                    reptext+="<p>Question "+unicode(question.enonce)+" reponse juste </p>"
+                    note += 1
+                else:
+                    #reponse fausse
+                    reptext+="<p>Question "+unicode(question.enonce)+" reponse fausse </p>"
+                
+#                 reptext +=str(count)+" "+request.POST.get(question.enonce)                  
+#                 output +="Question "+unicode(question.enonce)+" position "+unicode(request.POST.get(question.enonce))+ " reponse "+reptext
+                
+            else:
+                #answer is wrong or nothing has been submitted
+                pass
+            
+        logged_user = get_logged_user_from_request(request)
+        if logged_user:
+            output += logged_user.username
+        output += reptext
+        
+        #create and save an object:
+        ProgressionEleve.objects.create(eleve = logged_user, resultat = note)
+        
+        return HttpResponse(output)
+        
+        if len(request.POST.get('question_eleve'))==0:
+            #formulaire vide
+            return render(request, 'MonEtablissement/questionform.html', {'form': form})
+            
+    else:
+        
+        
+        
+        return render(request, 'MonEtablissement/questionform.html', {'form': form, 'test': activity_id})
         
 
+def pdf_view(request):
+    """
+    Classe pour servir un document PDF au sein du navigateur
+    Requiert l'installation du plugin de lecture PDF côté client
+    """
+    
+    #format url - remove leading '/' form request.path
+      
+    with open(request.path[1:], 'r') as pdf:
+        response = HttpResponse(pdf.read(),content_type='application/pdf')
+        response['Content-Disposition'] = 'filename=some_file.pdf'
+        return response
+    pdf.closed
+
+
+def your_view(request):
+    poll_results = [4, 6, 7, 1]
+    poll_as_json = json.dumps(poll_results)
+    # Gives you a string '[4, 6, 7, 1]'
+    return render(request, 'MonEtablissement/testd3js.html', {'poll_as_json': poll_as_json}) 
     
