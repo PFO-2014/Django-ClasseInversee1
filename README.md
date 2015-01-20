@@ -1,11 +1,19 @@
 Django-ClasseInversee1
 ======================
 
-A First Django project
-with crispy-bootstrap3
+A First Django project with crispy-bootstrap3
+
+
+Build a system to support a Flipped Classroom for teachers.
+
+  see http://en.wikipedia.org/wiki/Flipped_classroom
+
 
 include:
-  -session management
+  - Database model to support teacher materials
+  - interactive assignement for student (in progress)
+  - session management
+  
 
 =======
 master build from django classbook
