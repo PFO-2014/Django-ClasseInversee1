@@ -1,3 +1,5 @@
+
+# [DEPRECATED] switched for Django-ClassInverse [DEPRECATED]
 Django-ClasseInversee1
 ======================
 
