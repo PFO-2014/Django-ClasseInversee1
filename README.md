@@ -7,11 +7,11 @@
 
 ~~Build a system to support a Flipped Classroom for teachers.~~
 
-~~  see http://en.wikipedia.org/wiki/Flipped_classroom~~
+~~see http://en.wikipedia.org/wiki/Flipped_classroom~~
 
 
 ~~include:~~
- ~~ - Database model to support teacher materials~~
+  ~~- Database model to support teacher materials~~
   ~~- interactive assignement for student (in progress)~~
   ~~- session management~~
   
